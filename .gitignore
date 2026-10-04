@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+dist/
+.build/
+.cache/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log
+
+# Vite & React Web
+/.vite
+/.output
+/.pnp.*
+/.cache
+
+# Firebase
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.firebase/
+functions/node_modules/
+functions/lib/
+functions/.npm/
+functions/.firebase/
+*.js.map
+
+# Flutter & Dart
+**/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+.flutter/
+coverage/
+android/app/debug/
+android/app/release/
+ios/Pods/
+ios/Flutter/App.framework/
+ios/Flutter/Flutter.framework/
+ios/Flutter/GeneratedPluginRegistrant.*
+.ios/
+.android/
+
+# IDEs & System
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+.env.*.local

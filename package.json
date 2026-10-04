@@ -1,0 +1,23 @@
+{
+  "name": "opentalk-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Production-ready monorepo for Open Talk - Opinion Sharing & Discussion Platform (GDGOC)",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "firebase/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace=@opentalk/web run dev",
+    "dev:functions": "npm --workspace=@opentalk/functions run dev",
+    "dev:all": "concurrently -k -n web,functions -c cyan,yellow \"npm run dev:web\" \"npm run dev:functions\"",
+    "build:web": "npm --workspace=@opentalk/web run build",
+    "build:functions": "npm --workspace=@opentalk/functions run build",
+    "build:all": "npm run build:functions && npm run build:web",
+    "lint": "npm run --workspaces --if-present lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

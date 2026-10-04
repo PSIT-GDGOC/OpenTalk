@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DebateReply",
+  "type": "object",
+  "required": [
+    "id",
+    "postId",
+    "authorId",
+    "authorName",
+    "content",
+    "stanceSide",
+    "upvotes",
+    "downvotes",
+    "createdAt"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "postId": { "type": "string" },
+    "parentId": { "type": ["string", "null"] },
+    "authorId": { "type": "string" },
+    "authorName": { "type": "string" },
+    "authorAvatar": { "type": "string" },
+    "content": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "stanceSide": {
+      "type": "string",
+      "enum": ["support", "counter", "neutral"]
+    },
+    "upvotes": { "type": "integer", "minimum": 0 },
+    "downvotes": { "type": "integer", "minimum": 0 },
+    "createdAt": { "type": "string", "format": "date-time" }
+  }
+}

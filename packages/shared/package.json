@@ -1,0 +1,8 @@
+{
+  "name": "@opentalk/shared",
+  "version": "0.1.0",
+  "description": "Shared schemas, constants, and contracts for Open Talk",
+  "main": "index.js",
+  "type": "module",
+  "private": true
+}
