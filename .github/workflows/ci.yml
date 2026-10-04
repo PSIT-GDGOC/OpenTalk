@@ -1,0 +1,78 @@
+name: OpenTalk CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-web:
+    name: Lint & Build Web (React)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Shared Packages
+        run: npm run --workspace=@opentalk/shared build --if-present
+
+      - name: Build React Web App
+        run: npm run build:web
+
+  validate-mobile:
+    name: Analyze Mobile (Flutter)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+          cache: true
+
+      - name: Install Mobile Dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Analyze Dart Code
+        working-directory: apps/mobile
+        run: flutter analyze
+
+  validate-functions:
+    name: Build Firebase Functions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Functions Dependencies
+        working-directory: firebase/functions
+        run: npm ci || npm install
+
+      - name: Build TypeScript Functions
+        run: npm run build:functions
