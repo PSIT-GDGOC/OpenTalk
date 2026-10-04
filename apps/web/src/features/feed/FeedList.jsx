@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { PostCard } from './PostCard';
 import { DebateModal } from '../debate/DebateModal';
-import { PlusCircle, Sparkles } from 'lucide-react';
+import { PlusCircle, SearchX, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { EmptyState } from '../../components/EmptyState';
 
 const INITIAL_POSTS = [
   {
@@ -40,6 +41,22 @@ const INITIAL_POSTS = [
 export const FeedList = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [filter, setFilter] = useState('');
+  const [topic, setTopic] = useState('');
+  const [debouncedFilter, setDebouncedFilter] = useState('');
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebouncedFilter(filter), 300);
+    return () => clearTimeout(t);
+  }, [filter]);
+  const TITLE_MAX = 120;
+  const CONTENT_MAX = 2000;
+  const overLimit = newTitle.length > TITLE_MAX || newContent.length > CONTENT_MAX;
+  const counterClass = (len, max) => {
+    const ratio = max ? len / max : 0;
+    if (len > max || ratio >= 1) return 'text-red-400';
+    if (ratio >= 0.8) return 'text-amber-400';
+    return 'text-slate-500';
+  };
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTopic, setNewTopic] = useState('tech');
@@ -114,17 +131,25 @@ export const FeedList = () => {
               placeholder="What is your stance title?"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
+              maxLength={TITLE_MAX + 50}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               required
             />
+            <p className={`text-right text-xs ${counterClass(newTitle.length, TITLE_MAX)}`} aria-live="polite">
+              {newTitle.length}/{TITLE_MAX}
+            </p>
             <textarea
               placeholder="Elaborate on your stance, arguments, and points..."
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               rows={3}
+              maxLength={CONTENT_MAX + 100}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"
               required
             />
+            <p className={`text-right text-xs ${counterClass(newContent.length, CONTENT_MAX)}`} aria-live="polite">
+              {newContent.length}/{CONTENT_MAX}
+            </p>
             <div className="flex items-center justify-between pt-2">
               <select
                 value={newTopic}
@@ -146,7 +171,8 @@ export const FeedList = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+                  disabled={overLimit}
+                  className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Publish Stance
                 </button>
@@ -158,14 +184,61 @@ export const FeedList = () => {
 
       {/* Post feed list */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by topic">
+          {[{ id: '', label: 'All' }, { id: 'tech', label: 'Tech' }, { id: 'campus', label: 'Campus' }, { id: 'open-source', label: 'Open Source' }, { id: 'design', label: 'Design' }, { id: 'career', label: 'Career' }].map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTopic(t.id)}
+              aria-pressed={topic === t.id}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                topic === t.id
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <input
+          type="search"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Filter stances..."
+          aria-label="Filter stances"
+          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none"
+        />
+        {(() => {
+          const q = debouncedFilter.trim().toLowerCase();
+          const visible = posts.filter((p) => {
+            if (topic && p.topic !== topic) return false;
+            if (!q) return true;
+            return (
+              (p.title || '').toLowerCase().includes(q) ||
+              (p.tags || []).some((t) => String(t).toLowerCase().includes(q))
+            );
+          });
+          if (visible.length === 0) {
+            return (
+              <EmptyState
+                icon={SearchX}
+                title="No stances match"
+                description="Try different filters, or clear them to see the full feed."
+                actionLabel="Clear Filters"
+                onAction={() => setFilter('')}
+              />
+            );
+          }
+          return visible.map((post) => (
           <PostCard
             key={post.id}
             post={post}
             onVote={handleVote}
             onOpenDebate={(p) => setActiveDebatePost(p)}
           />
-        ))}
+          ));
+        })()}
       </div>
 
       {/* Threaded Debate Modal */}
